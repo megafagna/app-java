@@ -4,7 +4,7 @@ def project_token = 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
 properties([
     pipelineTriggers([
       [
-          $class: "GitHubPushTrigger"
+          $class: "GitHubPushTrigger",
             branchFilterType: 'All',
             triggerOnPush: true,
             triggerOnMergeRequest: true,
