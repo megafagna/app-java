@@ -1,8 +1,10 @@
 def project_token = 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
 
+
 properties([
     pipelineTriggers([
-        [
+      [
+          $class: "GitHubPushTrigger"
             branchFilterType: 'All',
             triggerOnPush: true,
             triggerOnMergeRequest: true,
@@ -19,10 +21,10 @@ properties([
             acceptMergeRequestOnSuccess: true,
             branchFilterType: "NameBasedFilter",
             includeBranchesSpec: "",
-            excludeBranchesSpec: "",
-        ]
+            excludeBranchesSpec: "",      
+      ]
     ])
-])
+  ])
 
 
 node(){
