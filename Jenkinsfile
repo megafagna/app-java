@@ -1,123 +1,58 @@
-def project_token = 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
-
-
-properties([
-    pipelineTriggers([
-      [
-          $class: "GitHubPushTrigger",
-            branchFilterType: 'All',
-            triggerOnPush: true,
-            triggerOnMergeRequest: true,
-            triggerOpenMergeRequestOnPush: "never",
-            triggerOnNoteRequest: true,
-            noteRegex: "Jenkins please retry a build",
-            skipWorkInProgressMergeRequest: true,
-            secretToken: project_token,
-            ciSkip: false,
-            setBuildDescription: true,
-            addNoteOnMergeRequest: true,
-            addCiMessage: true,
-            addVoteOnMergeRequest: true,
-            acceptMergeRequestOnSuccess: true,
-            branchFilterType: "NameBasedFilter",
-            includeBranchesSpec: "",
-            excludeBranchesSpec: "",      
-      ]
-    ])
-  ])
-
-
-node(){
-  try{
-    def buildNum = env.BUILD_NUMBER 
-    def branchName= env.BRANCH_NAME
-    
-    print buildNum
-    print branchName
-
-    stage('Env - clone generator'){
-      git "https://github.com/megafagna/app-java.git"
+pipeline {
+    agent any
+    tools {
+        maven 'maven3'
     }
-
-    stage('Env - run app-java'){
-      sh "./generator.sh -p"
-      sh "docker ps -a"
+    options {
+        buildDiscarder logRotator(daysToKeepStr: '5', numToKeepStr: '7')
     }
+    stages{
+        stage('Build'){
+            steps{
+                 sh script: 'mvn clean package'
+                 archiveArtifacts artifacts: 'target/*.war', onlyIfSuccessful: true
+            }
+        }
 
-    /* Récupération du dépôt git applicatif */
-    stage('SERVICE - Git checkout'){
-      git branch: branchName, url: "http://github.com/megafagna/app-java.git"
+        stage('SonarQube analysis') {
+//    def scannerHome = tool 'SonarScanner 4.0';
+        steps{
+        withSonarQubeEnv('sonarqube-8.9') { 
+        // If you have configured more than one global server connection, you can specify its name
+//      sh "${scannerHome}/bin/sonar-scanner"
+        sh "mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=maven \
+  -Dsonar.host.url=http://192.168.0.178:9000 \
+  -Dsonar.login=sqp_f8ae1c7d1cbc871c7f0caf20a9a617054bf2b356"
     }
+        }
+        }
 
-    /* déterminer l'extension */
-    if (branchName == "dev" ){
-      extension = "-SNAPSHOT"
+        stage('Upload War To Nexus'){
+            steps{
+                script{
+
+                    def mavenPom = readMavenPom file: 'pom.xml'
+                    def nexusRepoName = mavenPom.version.endsWith("SNAPSHOT") ? "my-app-snapshot" : "my-app-release"
+                    nexusArtifactUploader artifacts: [
+                        [
+                            artifactId: 'my-app', 
+                            classifier: '', 
+                            file: "target/my-app-${mavenPom.version}.war", 
+                            type: 'war'
+                        ]
+                    ], 
+                    credentialsId: 'nexus3', 
+                    groupId: 'com.dme.app', 
+                    nexusUrl: '192.168.0.178:8081', 
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    repository: nexusRepoName,
+                    version: "${mavenPom.version}"
+                    }
+            }
+        }
     }
-    if (branchName == "stage" ){
-      extension = "-RC"
-    }
-    if (branchName == "master" ){
-      extension = ""
-    }
-
-    /* Récupération du commitID long */
-    def commitIdLong = sh returnStdout: true, script: 'git rev-parse HEAD'
-
-    /* Récupération du commitID court */
-    def commitId = commitIdLong.take(7)
-
-    /* Modification de la version dans le pom.xml */
-    sh "sed -i s/'-XXX'/${extension}/g pom.xml"
-
-    /* Récupération de la version du pom.xml après modification */
-    def version = sh returnStdout: true, script: "cat pom.xml | grep -A1 '<artifactId>myapp1' | tail -1 |perl -nle 'm{.*<version>(.*)</version>.*};print \$1' | tr -d '\n'"
-
-     print """
-     #################################################
-        BanchName: $branchName
-        CommitID: $commitId
-        AppVersion: $version
-        JobNumber: $buildNum
-     #################################################
-        """
-
-    /* Maven - tests */
-    stage('SERVICE - Tests unitaires'){
-      sh 'docker run --rm --name maven-${commitIdLong} -v mvn -B clean test'
-    }
-
-    /* Maven - build */
-    stage('SERVICE - Jar'){
-      sh 'docker run --rm --name maven${commitIdLong} mvn -B clean install'
-    }
-
-
-    /* Docker - build & push */
-    /* Attention Credentials */
-    def imageName='192.168.0.2:5000/myapp'
-
-    stage('DOCKER - Build/Push registry'){
-      docker.withRegistry('http://192.168.0.2:5000', 'registry_login') {
-         def customImage = docker.build("$imageName:${version}-${commitId}")
-         customImage.push()
-      }
-      sh "docker rmi $imageName:${version}-${commitId}"
-    }
-
-    /* Docker - test */
-    stage('DOCKER - check registry'){
-      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'myregistry_login',usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-      sh 'curl -sk --user $USERNAME:$PASSWORD https://192.168.0.2:5000/v2/myapp/tags/list'
-      }
-    }
-
-
-
-  } finally {
-    sh 'docker rm -f app-java'
-    cleanWs()
-  }
 }
-
 
 
