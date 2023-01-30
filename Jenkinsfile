@@ -1,7 +1,7 @@
 def project_token = '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'
 
 properties([
-    gitLabConnection('git-connection-name'),
+//    gitLabConnection('git-connection-name'),
     pipelineTriggers([
         [
             $class: 'GitLabPushTrigger',
