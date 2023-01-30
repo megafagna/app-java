@@ -1,4 +1,4 @@
-def project_token = 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
+def project_token = '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'
 
 properties([
     gitLabConnection('git-connection-name'),
@@ -36,7 +36,7 @@ node(){
     print branchName
 
     stage('Env - clone generator'){
-      git "http://gitlab.example.com/mypipeline/generator.git"
+      git "https://github.com/megafagna/app-java.git"
     }
 
     stage('Env - run app-java'){
@@ -46,7 +46,7 @@ node(){
 
     /* Récupération du dépôt git applicatif */
     stage('SERVICE - Git checkout'){
-      git branch: branchName, url: "http://gitlab.example.com/mypipeline/myapp1.git"
+      git branch: branchName, url: "http://github.com/megafagna/app-java.git"
     }
 
     /* déterminer l'extension */
