@@ -1,10 +1,8 @@
-def project_token = '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'
+def project_token = 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
 
 properties([
-//    gitLabConnection('git-connection-name'),
     pipelineTriggers([
         [
-            $class: 'GitLabPushTrigger',
             branchFilterType: 'All',
             triggerOnPush: true,
             triggerOnMergeRequest: true,
@@ -83,12 +81,12 @@ node(){
 
     /* Maven - tests */
     stage('SERVICE - Tests unitaires'){
-      sh 'mvn -B clean test'
+      sh 'docker run --rm --name maven-${commitIdLong} -v mvn -B clean test'
     }
 
     /* Maven - build */
     stage('SERVICE - Jar'){
-      sh 'mvn -B clean install'
+      sh 'docker run --rm --name maven${commitIdLong} mvn -B clean install'
     }
 
 
@@ -118,3 +116,6 @@ node(){
     cleanWs()
   }
 }
+
+
+
