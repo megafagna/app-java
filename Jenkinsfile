@@ -44,7 +44,7 @@ pipeline {
                     ], 
                     credentialsId: 'nexus3', 
                     groupId: 'com.dme.app', 
-                    nexusUrl: '192.168.0.178:8081', 
+                    nexusUrl: '192.168.0.42:8081',
                     nexusVersion: 'nexus3',
                     protocol: 'http',
                     repository: nexusRepoName,
