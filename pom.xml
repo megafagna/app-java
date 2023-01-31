@@ -6,7 +6,7 @@
 
   <groupId>com.dme.app</groupId>
   <artifactId>my-app</artifactId>
-  <version>3.1-RELEASE</version>
+  <version>3.2</version>
   <packaging>war</packaging>
 
   <name>my-app Maven Webapp</name>
