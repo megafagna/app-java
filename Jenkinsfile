@@ -22,7 +22,7 @@ pipeline {
 //      sh "${scannerHome}/bin/sonar-scanner"
         sh "mvn clean verify sonar:sonar \
   -Dsonar.projectKey=maven \
-  -Dsonar.host.url=http://192.168.0.178:9000 \
+  -Dsonar.host.url=http://192.168.0.42:9000 \
   -Dsonar.login=sqp_f8ae1c7d1cbc871c7f0caf20a9a617054bf2b356"
     }
         }
