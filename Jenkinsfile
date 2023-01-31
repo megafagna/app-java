@@ -15,8 +15,11 @@ pipeline {
         }
 
     stage('Archive Test Results'){
-        sh script: 'junit allowEmptyResults: true, testResults: '**/surefire-reports/*.xml''
+           steps{
+		junit allowEmptyResults: true, testResults: '**/surefire-reports/*.xml'
+           }
     }
+
 
     stage('SonarQube analysis') {
 //    def scannerHome = tool 'SonarScanner 4.0';
