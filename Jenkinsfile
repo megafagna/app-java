@@ -15,7 +15,7 @@ pipeline {
         }
 
     stage('Archive Test Results'){
-        junit allowEmptyResults: true, testResults: '**/surefire-reports/*.xml'
+        sh script: 'junit allowEmptyResults: true, testResults: '**/surefire-reports/*.xml''
     }
 
     stage('SonarQube analysis') {
@@ -25,7 +25,7 @@ pipeline {
         // If you have configured more than one global server connection, you can specify its name
 //      sh "${scannerHome}/bin/sonar-scanner"
         sh "mvn clean verify sonar:sonar \
-  -Dsonar.projectKey=maven \
+  -Dsonar.projectKey=pipelineappjava \
   -Dsonar.host.url=http://192.168.0.43:9000 \
   -Dsonar.login=23dc7313c73eeececdf584342cd4a77dd52a8bbd"
     }
