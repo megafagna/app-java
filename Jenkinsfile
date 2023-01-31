@@ -14,7 +14,11 @@ pipeline {
             }
         }
 
-        stage('SonarQube analysis') {
+    stage('Archive Test Results'){
+        junit allowEmptyResults: true, testResults: '**/surefire-reports/*.xml'
+    }
+
+    stage('SonarQube analysis') {
 //    def scannerHome = tool 'SonarScanner 4.0';
         steps{
         withSonarQubeEnv('sonar') { 
@@ -22,8 +26,8 @@ pipeline {
 //      sh "${scannerHome}/bin/sonar-scanner"
         sh "mvn clean verify sonar:sonar \
   -Dsonar.projectKey=maven \
-  -Dsonar.host.url=http://192.168.0.42:9000 \
-  -Dsonar.login=sqp_f8ae1c7d1cbc871c7f0caf20a9a617054bf2b356"
+  -Dsonar.host.url=http://192.168.0.43:9000 \
+  -Dsonar.login=23dc7313c73eeececdf584342cd4a77dd52a8bbd"
     }
         }
         }
@@ -44,7 +48,7 @@ pipeline {
                     ], 
                     credentialsId: 'nexus3', 
                     groupId: 'com.dme.app', 
-                    nexusUrl: '192.168.0.42:8081',
+                    nexusUrl: '192.168.0.43:8081',
                     nexusVersion: 'nexus3',
                     protocol: 'http',
                     repository: nexusRepoName,
