@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-app
+  namespace: javaapp
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: java-app
+  template:
+    metadata:
+      labels:
+        app: java-app
+    spec:
+      containers:
+      - name: java-app
+        image: kicbase/echo-server:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: app-http
+          protocol: TCP
+        env:
+          - name: VAR_URL
+            valueFrom:
+              configMapKeyRef:
+                name: db-dev-config
+                key: tesouraria-url
+          - name: CADASTRO_URL
+            valueFrom:
+              configMapKeyRef:
+                name: db-dev-config
+                key: cadastro-url
+          - name: KAFKA_URL
+            valueFrom:
+              configMapKeyRef:
+                name: db-dev-config
+                key: kafka-url
+          - name: DB_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: db-dev-config
+                key: db-username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secret-dev
+                key: db-pass
