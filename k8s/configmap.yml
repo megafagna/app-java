@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-dev-config
+  namespace: javaapp
+data:
+  app-url: xxx.xxx.xxx.xxx
+  end-url: xxx.xxx.xxx.xxx
+  kafka-url: xxx.xxx.xxx.xxx
+  db-username: xxxxxxxxxxxxxxxxxxxxxxx
+  db-url: xxx.xxx.xxx.xxx
